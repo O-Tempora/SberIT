@@ -6,7 +6,7 @@ config=config/default.yaml
 	run \
 
 build:
-	go build -o $(binary_name) cmd/server/*.go
+	go build -o $(binary_name) cmd/api-server/*.go
 
 run: build
 	./$(binary_name) -config=$(config)

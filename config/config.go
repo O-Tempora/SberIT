@@ -5,4 +5,5 @@ type Config struct {
 	Port   int    `yaml:"port"`
 	DbHost string `yaml:"dbhost"`
 	DbPort int    `yaml:"dbport"`
+	DbBase string `yaml:"dbbase"`
 }
