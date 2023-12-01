@@ -1,5 +1,5 @@
-host: "localhost"
+host: localhost
 port: 8000
-dbhost: "localhost"
+dbhost: localhost
 dbport: 5555
-dbbase: "sber"
+dbbase: sber

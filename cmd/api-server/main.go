@@ -33,8 +33,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	cf := &config.Config{}
-	err = yaml.Unmarshal(bytes, cf)
+	cf := config.Config{}
+	err = yaml.Unmarshal(bytes, &cf)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -53,7 +53,7 @@ func main() {
 
 	connectionInfo := fmt.Sprintf("%s:%d", cf.Host, cf.Port)
 	s.Logger.Info().Msgf("Server starts on %s", connectionInfo)
-	if err = http.ListenAndServe(connectionInfo, s.Router); err != nil {
+	if err = http.ListenAndServe(connectionInfo, s); err != nil {
 		s.Logger.Error().Msgf("Server start error: %s", connectionInfo)
 	}
 }
