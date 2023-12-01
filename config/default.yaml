@@ -1,5 +1,5 @@
-host: "127.0.0.1"
-port: 6100
-dbhost: "127.0.0.1"
-dbport: 6101
-dbbase: "postgres"
+host: "localhost"
+port: 8000
+dbhost: "localhost"
+dbport: 5555
+dbbase: "sber"

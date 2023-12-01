@@ -1,0 +1,5 @@
+host: api
+port: 8000
+dbhost: database
+dbport: 5555
+dbbase: sber
