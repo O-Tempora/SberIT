@@ -35,7 +35,7 @@ func (s *Server) InitRouter() {
 		r.Get("/{id}", s.handleGet)
 		r.Get("/", s.handleGetAll)
 		r.Post("/", s.handleCreateTask)
-		r.Put("/{id}", nil)
+		r.Put("/{id}", s.handleUpdate)
 		r.Delete("/{id}", s.handleDelete)
 	})
 }
@@ -87,6 +87,25 @@ func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Service.Delete(id); err != nil {
+		s.respond(w, r, http.StatusInternalServerError, nil, err)
+		return
+	}
+	s.respond(w, r, http.StatusOK, nil, nil)
+}
+
+func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		s.respond(w, r, http.StatusBadRequest, nil, err)
+		return
+	}
+	req := models.Task{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.respond(w, r, http.StatusBadRequest, nil, err)
+		return
+	}
+	if err := s.Service.Update(id, req); err != nil {
 		s.respond(w, r, http.StatusInternalServerError, nil, err)
 		return
 	}

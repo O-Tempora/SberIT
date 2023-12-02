@@ -45,7 +45,6 @@ func main() {
 		WithLogger(wr).
 		WithDb(cf.DbHost, cf.DbBase, cf.DbPort)
 	s.InitRouter()
-	fmt.Println(s.Router)
 
 	connectionInfo := fmt.Sprintf("%s:%d", cf.Host, cf.Port)
 	s.Logger.Info().Msgf("Server starts on %s", connectionInfo)

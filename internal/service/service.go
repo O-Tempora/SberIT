@@ -31,15 +31,23 @@ func (s *Service) GetAll() ([]models.Task, error) {
 }
 
 func (s *Service) Get(id int) (*models.Task, error) {
-	var task *models.Task
-	if err := s.Db.Select(task, `select * from tasks where id = $1`, id); err != nil {
+	var task models.Task
+	if err := s.Db.Get(&task, `select * from tasks where id = $1`, id); err != nil {
 		return nil, err
 	}
-	return task, nil
+	return &task, nil
 }
 
 func (s *Service) Delete(id int) error {
 	if _, err := s.Db.Exec(`delete from tasks where id = $1`, id); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) Update(id int, task models.Task) error {
+	if _, err := s.Db.Exec(`update tasks set header=$1, description=$2, deadline=$3, done=$4 where id = $5`,
+		task.Header, task.Description, task.Deadline, task.Done, id); err != nil {
 		return err
 	}
 	return nil
