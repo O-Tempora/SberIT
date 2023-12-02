@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -39,23 +40,27 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	if err = os.MkdirAll("logs", os.ModePerm); err != nil {
-		log.Fatal(err.Error())
-	}
-	file, err := os.OpenFile("logs/logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
+	wr := getLoggerWriter()
 	s := server.InitServer(cf).
-		WithLogger(os.Stdout, file).
+		WithLogger(wr).
 		WithDb(cf.DbHost, cf.DbBase, cf.DbPort)
-	s.Logger.Info().Msgf("Config: %+v", cf)
-	s.Logger.Info().Msgf("Server: %+v", s)
+	s.InitRouter()
+	fmt.Println(s.Router)
 
 	connectionInfo := fmt.Sprintf("%s:%d", cf.Host, cf.Port)
 	s.Logger.Info().Msgf("Server starts on %s", connectionInfo)
 	if err = http.ListenAndServe(connectionInfo, s); err != nil {
 		s.Logger.Error().Msgf("Server start error: %s", connectionInfo)
 	}
+}
+
+func getLoggerWriter() io.Writer {
+	if err := os.MkdirAll("logs", os.ModePerm); err != nil {
+		return io.MultiWriter(os.Stdout)
+	}
+	file, err := os.OpenFile("logs/logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return io.MultiWriter(os.Stdout)
+	}
+	return io.MultiWriter(os.Stdout, file)
 }

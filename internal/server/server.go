@@ -30,7 +30,6 @@ func InitServer(cf config.Config) *Server {
 		Logger: zerolog.New(os.Stdout),
 		Router: chi.NewRouter(),
 	}
-	s.InitRouter()
 	return s
 }
 
@@ -43,10 +42,10 @@ func (s *Server) WithDb(host, name string, port int) *Server {
 
 	_, err = db.Exec(`create table tasks(
 		id serial4 PRIMARY KEY NOT NULL,
-		header text NOT NULL,
-		description text NOT NULL,
-		deadline date NOT NULL,
-		done bool NOT NULL
+		header text,
+		description text,
+		deadline date,
+		done bool
 	)`)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -57,9 +56,9 @@ func (s *Server) WithDb(host, name string, port int) *Server {
 	return s
 }
 
-func (s *Server) WithLogger(srcs ...io.Writer) *Server {
+func (s *Server) WithLogger(srcs io.Writer) *Server {
 	logger := zerolog.New(zerolog.ConsoleWriter{
-		Out:        io.MultiWriter(srcs...),
+		Out:        srcs,
 		NoColor:    false,
 		TimeFormat: time.ANSIC,
 		FormatLevel: func(i interface{}) string {
