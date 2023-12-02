@@ -50,6 +50,8 @@ func main() {
 	s := server.InitServer(cf).
 		WithLogger(os.Stdout, file).
 		WithDb(cf.DbHost, cf.DbBase, cf.DbPort)
+	s.Logger.Info().Msgf("Config: %+v", cf)
+	s.Logger.Info().Msgf("Server: %+v", s)
 
 	connectionInfo := fmt.Sprintf("%s:%d", cf.Host, cf.Port)
 	s.Logger.Info().Msgf("Server starts on %s", connectionInfo)

@@ -1,5 +1,5 @@
 host: api
 port: 8000
 dbhost: database
-dbport: 5555
+dbport: 5432
 dbbase: sber
