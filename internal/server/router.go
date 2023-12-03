@@ -31,9 +31,10 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 }
 
 func (s *Server) InitRouter() {
-	s.Router.Route("/task", func(r chi.Router) {
+	s.Router.Route("/tasks", func(r chi.Router) {
 		r.Get("/{id}", s.handleGet)
-		r.Get("/", s.handleGetAll)
+		r.Get("/", s.handleGetList)
+		r.Get("/byDate/{year}-{month}-{day}", s.handleGetByDate)
 		r.Post("/", s.handleCreateTask)
 		r.Put("/{id}", s.handleUpdate)
 		r.Delete("/{id}", s.handleDelete)
@@ -54,9 +55,26 @@ func (s *Server) handleCreateTask(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusCreated, nil, nil)
 }
 
-func (s *Server) handleGetAll(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	tasks, err := s.Service.GetAll()
+	var err error
+	var tasks []models.Task
+	var page, take *int
+	var done *bool
+
+	buf_done, err := strconv.ParseBool(r.URL.Query().Get("done"))
+	if err == nil {
+		done = &buf_done
+	}
+	buf_page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err == nil {
+		buf_take, err := strconv.Atoi(r.URL.Query().Get("take"))
+		if err == nil {
+			page = &buf_page
+			take = &buf_take
+		}
+	}
+	tasks, err = s.Service.GetList(page, take, done)
 	if err != nil {
 		s.respond(w, r, http.StatusInternalServerError, nil, err)
 		return
@@ -110,4 +128,41 @@ func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.respond(w, r, http.StatusOK, nil, nil)
+}
+
+func (s *Server) handleGetByDate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var err error
+	var done bool
+	var tasks []models.Task
+
+	date, err := getDateFromURL(r)
+	if err != nil {
+		s.respond(w, r, http.StatusBadRequest, nil, err)
+		return
+	}
+
+	// if status was not set - get all by date
+	if r.URL.Query().Get("done") == "" {
+		tasks, err = s.Service.GetByDateAndStatus(*date, false, false)
+		if err != nil {
+			s.respond(w, r, http.StatusInternalServerError, nil, err)
+			return
+		}
+		s.respond(w, r, http.StatusOK, tasks, nil)
+		return
+	}
+	// if status was set - get all by date and status
+	done, err = strconv.ParseBool(r.URL.Query().Get("done"))
+	if err != nil {
+		s.respond(w, r, http.StatusBadRequest, nil, err)
+		return
+	}
+	tasks, err = s.Service.GetByDateAndStatus(*date, done, true)
+	if err != nil {
+		s.respond(w, r, http.StatusInternalServerError, nil, err)
+		return
+	}
+	s.respond(w, r, http.StatusOK, tasks, nil)
 }
