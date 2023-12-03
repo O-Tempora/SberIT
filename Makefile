@@ -8,6 +8,7 @@ config=config/default.yaml
 	up \
 	down \
 	killdb \
+	test \
 
 build:
 	go build -o $(binary_name) cmd/api-server/*.go
@@ -26,3 +27,8 @@ up:
 down:
 	sudo docker compose down
 
+test:
+	sudo docker run -d -p 6969:5432 --name=testdb -e POSTGRES_DB=sber -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres
+	timeout 15s bash -c 'until sudo docker exec testdb pg_isready ; do sleep 1 ; done'
+	go test -count=1 ./...
+	sudo docker stop testdb && sudo docker rm testdb
