@@ -18,7 +18,7 @@ run: build
 	./$(binary_name) -config=$(config)
 
 killdb:
-	docker stop $(db_container_name) && docker rm $(db_container_name)
+	sudo docker stop $(db_container_name) && sudo docker rm $(db_container_name)
 
 up:
 	sudo docker compose up -d

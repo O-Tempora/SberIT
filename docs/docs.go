@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/tasks": {
             "get": {
-                "description": "Description",
+                "description": "Returns list of tasks with optional pagination (page + take) and optional filter by status (done)",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,7 +73,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Description",
+                "description": "Creates task with fields in body param and returns inserted id if successfull",
                 "consumes": [
                     "application/json"
                 ],
@@ -119,7 +119,7 @@ const docTemplate = `{
         },
         "/tasks/byDate/{year}-{month}-{day}": {
             "get": {
-                "description": "Description",
+                "description": "Returns tasks by date from path params and optional filter by status (done)",
                 "consumes": [
                     "application/json"
                 ],
@@ -186,7 +186,7 @@ const docTemplate = `{
         },
         "/tasks/{id}": {
             "get": {
-                "description": "Description",
+                "description": "Returns task with id from id path vparam. Returns error if no task with such id exists",
                 "consumes": [
                     "application/json"
                 ],
@@ -228,7 +228,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Description",
+                "description": "Updates task using data from body and with id from path param. If some fields of body struct are omitted, they will be overwritten by default values",
                 "consumes": [
                     "application/json"
                 ],
@@ -276,7 +276,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Description",
+                "description": "Deletes task by id from id path param",
                 "consumes": [
                     "application/json"
                 ],

@@ -19,7 +19,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Description
+      description: Returns list of tasks with optional pagination (page + take) and
+        optional filter by status (done)
       parameters:
       - description: Task status
         in: query
@@ -56,7 +57,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Description
+      description: Creates task with fields in body param and returns inserted id
+        if successfull
       parameters:
       - description: Task data
         in: body
@@ -86,7 +88,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Description
+      description: Deletes task by id from id path param
       parameters:
       - description: Task id
         in: path
@@ -112,7 +114,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Description
+      description: Returns task with id from id path vparam. Returns error if no task
+        with such id exists
       parameters:
       - description: Task id
         in: path
@@ -140,7 +143,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Description
+      description: Updates task using data from body and with id from path param.
+        If some fields of body struct are omitted, they will be overwritten by default
+        values
       parameters:
       - description: Task id
         in: path
@@ -173,7 +178,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Description
+      description: Returns tasks by date from path params and optional filter by status
+        (done)
       parameters:
       - description: Year
         in: path

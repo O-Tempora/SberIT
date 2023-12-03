@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,7 +36,7 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 
 func (s *Server) InitRouter() {
 	s.Router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8000/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.Config.Port)), //The url pointing to API definition
 	))
 
 	s.Router.Route("/tasks", func(r chi.Router) {
@@ -48,10 +49,10 @@ func (s *Server) InitRouter() {
 	})
 }
 
-// AuthorizeUser godoc
+// CreateTask godoc
 //
 //	@Summary		Create task
-//	@Description	Description
+//	@Description	Creates task with fields in body param and returns inserted id if successfull
 //	@Tags			Create
 //	@Accept			json
 //	@Produce		json
@@ -75,10 +76,10 @@ func (s *Server) handleCreateTask(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusCreated, id, nil)
 }
 
-// AuthorizeUser godoc
+// GetList godoc
 //
 //	@Summary		Get task list
-//	@Description	Description
+//	@Description	Returns list of tasks with optional pagination (page + take) and optional filter by status (done)
 //	@Tags			GetList
 //	@Accept			json
 //	@Produce		json
@@ -116,10 +117,10 @@ func (s *Server) handleGetList(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, tasks, nil)
 }
 
-// AuthorizeUser godoc
+// GetTask godoc
 //
 //	@Summary		Get task by id
-//	@Description	Description
+//	@Description	Returns task with id from id path vparam. Returns error if no task with such id exists
 //	@Tags			Get
 //	@Accept			json
 //	@Produce		json
@@ -143,10 +144,10 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, task, nil)
 }
 
-// AuthorizeUser godoc
+// DeleteTask godoc
 //
 //	@Summary		Delete task by id
-//	@Description	Description
+//	@Description	Deletes task by id from id path param
 //	@Tags			Delete
 //	@Accept			json
 //	@Produce		json
@@ -169,10 +170,10 @@ func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, nil, nil)
 }
 
-// AuthorizeUser godoc
+// UpdateTask godoc
 //
 //	@Summary		Update task
-//	@Description	Description
+//	@Description	Updates task using data from body and with id from path param. If some fields of body struct are omitted, they will be overwritten by default values
 //	@Tags			Update
 //	@Accept			json
 //	@Produce		json
@@ -201,10 +202,10 @@ func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, nil, nil)
 }
 
-// AuthorizeUser godoc
+// GetByDate godoc
 //
 //	@Summary		Get tasks by date
-//	@Description	Description
+//	@Description	Returns tasks by date from path params and optional filter by status (done)
 //	@Tags			GetList
 //	@Accept			json
 //	@Produce		json
