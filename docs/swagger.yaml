@@ -1,0 +1,217 @@
+definitions:
+  models.Task:
+    properties:
+      deadline:
+        type: string
+      description:
+        type: string
+      done:
+        type: boolean
+      header:
+        type: string
+      id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Task status
+        in: query
+        name: done
+        type: boolean
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: take
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get task list
+      tags:
+      - GetList
+    post:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create task
+      tags:
+      - Create
+  /tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete task by id
+      tags:
+      - Delete
+    get:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get task by id
+      tags:
+      - Get
+    put:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update task
+      tags:
+      - Update
+  /tasks/byDate/{year}-{month}-{day}:
+    get:
+      consumes:
+      - application/json
+      description: Description
+      parameters:
+      - description: Year
+        in: path
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: path
+        name: month
+        required: true
+        type: integer
+      - description: Day
+        in: path
+        name: day
+        required: true
+        type: integer
+      - description: Task status
+        in: query
+        name: done
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get tasks by date
+      tags:
+      - GetList
+swagger: "2.0"

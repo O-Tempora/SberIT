@@ -7,6 +7,9 @@ import (
 
 	"github.com/O-Tempora/SberIT/internal/models"
 	"github.com/go-chi/chi/v5"
+
+	_ "github.com/O-Tempora/SberIT/docs"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // To implement http.Handler
@@ -31,6 +34,10 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 }
 
 func (s *Server) InitRouter() {
+	s.Router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8000/swagger/doc.json"), //The url pointing to API definition
+	))
+
 	s.Router.Route("/tasks", func(r chi.Router) {
 		r.Get("/{id}", s.handleGet)
 		r.Get("/", s.handleGetList)
@@ -41,6 +48,18 @@ func (s *Server) InitRouter() {
 	})
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Create task
+//	@Description	Description
+//	@Tags			Create
+//	@Accept			json
+//	@Produce		json
+//	@Param			task	body	models.Task	true	"Task data"
+//	@Router			/tasks [post]
+//	@Success		200	{integer}		Id
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleCreateTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	req := models.Task{}
@@ -48,13 +67,28 @@ func (s *Server) handleCreateTask(w http.ResponseWriter, r *http.Request) {
 		s.respond(w, r, http.StatusBadRequest, nil, err)
 		return
 	}
-	if err := s.Service.Create(req); err != nil {
+	id, err := s.Service.Create(req)
+	if err != nil {
 		s.respond(w, r, http.StatusInternalServerError, nil, err)
 		return
 	}
-	s.respond(w, r, http.StatusCreated, nil, nil)
+	s.respond(w, r, http.StatusCreated, id, nil)
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Get task list
+//	@Description	Description
+//	@Tags			GetList
+//	@Accept			json
+//	@Produce		json
+//	@Param			done	query	bool	false	"Task status"
+//	@Param			page	query	int		false	"Page number"
+//	@Param			take	query	int		false	"Page size"
+//	@Router			/tasks [get]
+//	@Success		200	{array}		models.Task
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleGetList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var err error
@@ -82,6 +116,18 @@ func (s *Server) handleGetList(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, tasks, nil)
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Get task by id
+//	@Description	Description
+//	@Tags			Get
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Task id"
+//	@Router			/tasks/{id} [get]
+//	@Success		200	{object}	models.Task
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -97,6 +143,18 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, task, nil)
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Delete task by id
+//	@Description	Description
+//	@Tags			Delete
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Task id"
+//	@Router			/tasks/{id} [delete]
+//	@Success		200
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -111,6 +169,19 @@ func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, nil, nil)
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Update task
+//	@Description	Description
+//	@Tags			Update
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path	int			true	"Task id"
+//	@Param			task	body	models.Task	true	"Task data"
+//	@Router			/tasks/{id} [put]
+//	@Success		200
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -130,6 +201,21 @@ func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, nil, nil)
 }
 
+// AuthorizeUser godoc
+//
+//	@Summary		Get tasks by date
+//	@Description	Description
+//	@Tags			GetList
+//	@Accept			json
+//	@Produce		json
+//	@Param			year	path	int		true	"Year"
+//	@Param			month	path	int		true	"Month"
+//	@Param			day		path	int		true	"Day"
+//	@Param			done	query	bool	false	"Task status"
+//	@Router			/tasks/byDate/{year}-{month}-{day} [get]
+//	@Success		200	{array}		models.Task
+//	@Failure		400	{string}	error
+//	@Failure		500	{string}	error
 func (s *Server) handleGetByDate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

@@ -23,6 +23,20 @@ func init() {
 	flag.StringVar(&configPath, "config", defaultConfig, "Path to config file")
 }
 
+//	@title			Swagger TDL API
+//	@version		1.0
+//	@description	CRUD ToDo List server
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host		localhost:8000
+// @BasePath	/
 func main() {
 	flag.Parse()
 	if configPath == "" {

@@ -12,15 +12,21 @@ type Service struct {
 	Db *sqlx.DB
 }
 
-func (s *Service) Create(task models.Task) error {
+func (s *Service) Create(task models.Task) (int, error) {
 	if task.Deadline.Before(time.Now()) {
 		task.Deadline = time.Now().Add(24 * time.Hour)
 	}
-	_, err := s.Db.Exec(`insert into tasks
+
+	var id int
+	err := s.Db.Get(&id, `insert into tasks
 		(header, description, deadline, done)
-		values ($1, $2, $3, $4)`,
+		values ($1, $2, $3, $4)
+		returning id`,
 		task.Header, task.Description, task.Deadline, task.Done)
-	return err
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
 }
 
 func (s *Service) GetList(page, take *int, done *bool) ([]models.Task, error) {
