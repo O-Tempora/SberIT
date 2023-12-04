@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"time"
 
 	"github.com/O-Tempora/SberIT/internal/models"
@@ -29,32 +28,33 @@ func (s *Service) Create(task models.Task) (int, error) {
 	return id, nil
 }
 
-func (s *Service) GetList(page, take *int, done *bool) ([]models.Task, error) {
+func (s *Service) GetList(done *bool) ([]models.Task, error) {
 	var tasks []models.Task
 	var err error
 
-	// if pagination was not set
-	if page == nil || take == nil {
-		err = s.Db.Select(
-			&tasks,
-			`select * from tasks`,
-		)
+	if done == nil {
+		err = s.Db.Select(&tasks, `select * from tasks`)
 	} else {
-		// if pagination was set with status
-		if done != nil {
-			err = s.Db.Select(
-				&tasks,
-				`select * from tasks where done = $1 limit $2 offset $3`,
-				*done, *take, *take*(*page-1),
-			)
-		} else { // if pagination was set without status
-			err = s.Db.Select(
-				&tasks,
-				`select * from tasks limit $1 offset $2`,
-				*take, *take*(*page-1),
-			)
-		}
+		err = s.Db.Select(&tasks, `select * from tasks where done = $1`, *done)
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+func (s *Service) GetListWithPagination(page, take int, done *bool) ([]models.Task, error) {
+	var tasks []models.Task
+	var err error
+
+	if done == nil {
+		err = s.Db.Select(&tasks, `select * from tasks limit $1 offset $2`, take, take*(page-1))
+	} else {
+		err = s.Db.Select(&tasks, `select * from tasks where done = $1 limit $2 offset $3`, *done, take, take*(page-1))
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *Service) Delete(id int) error {
 
 func (s *Service) Update(id int, task models.Task) error {
 	if task.Deadline.Before(time.Now()) {
-		return errors.New("task deadline can not be earlier than today")
+		return errInvalidDeadline
 	}
 	if _, err := s.Db.Exec(`update tasks set header=$1, description=$2, deadline=$3, done=$4 where id = $5`,
 		task.Header, task.Description, task.Deadline, task.Done, id); err != nil {

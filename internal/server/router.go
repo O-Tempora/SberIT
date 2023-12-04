@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -94,27 +95,44 @@ func (s *Server) handleGetList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var err error
 	var tasks []models.Task
-	var page, take *int
 	var done *bool
 
-	buf_done, err := strconv.ParseBool(r.URL.Query().Get("done"))
-	if err == nil {
+	// See if "done" parameter was set (optional)
+	if r.URL.Query().Get("done") != "" {
+		buf_done, err := strconv.ParseBool(r.URL.Query().Get("done"))
+		if err != nil {
+			s.respond(w, r, http.StatusBadRequest, nil, err)
+			return
+		}
 		done = &buf_done
 	}
-	buf_page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err == nil {
-		buf_take, err := strconv.Atoi(r.URL.Query().Get("take"))
-		if err == nil {
-			page = &buf_page
-			take = &buf_take
+
+	// Pagination parameters were not set, so selecting tasks only by status
+	if r.URL.Query().Get("page") == "" && r.URL.Query().Get("take") == "" {
+		tasks, err = s.Service.GetList(done)
+		if err != nil {
+			s.respond(w, r, http.StatusInternalServerError, nil, err)
+			return
 		}
+		s.respond(w, r, http.StatusOK, tasks, nil)
+		return
 	}
-	tasks, err = s.Service.GetList(page, take, done)
+
+	// Any of pagination parameters were set
+	page, pageErr := strconv.Atoi(r.URL.Query().Get("page"))
+	take, takeErr := strconv.Atoi(r.URL.Query().Get("take"))
+	if err = errors.Join(takeErr, pageErr); err != nil {
+		s.respond(w, r, http.StatusBadRequest, nil, err)
+		return
+	}
+
+	tasks, err = s.Service.GetListWithPagination(page, take, done)
 	if err != nil {
 		s.respond(w, r, http.StatusInternalServerError, nil, err)
 		return
 	}
 	s.respond(w, r, http.StatusOK, tasks, nil)
+	return
 }
 
 // GetTask godoc

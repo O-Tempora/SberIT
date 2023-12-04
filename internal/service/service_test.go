@@ -152,38 +152,92 @@ func TestGetByDate(t *testing.T) {
 }
 
 func TestGetList(t *testing.T) {
+	var fl bool = false
+	var tr bool = true
 	var test_cases = []struct {
-		done         bool
-		page         int
-		take         int
-		expected_num int
+		done            *bool
+		expected_length int
 	}{
 		{
-			done:         true,
-			page:         1,
-			take:         2,
-			expected_num: 2,
+			done:            nil,
+			expected_length: 3,
 		},
 		{
-			done:         false,
-			page:         1,
-			take:         2,
-			expected_num: 1,
+			done:            &fl,
+			expected_length: 1,
 		},
 		{
-			done:         false,
-			page:         10,
-			take:         5,
-			expected_num: 0,
+			done:            &tr,
+			expected_length: 2,
 		},
 	}
 
 	for _, tc := range test_cases {
-		tasks, err := service.GetList(&tc.page, &tc.take, &tc.done)
+		tasks, err := service.GetList(tc.done)
 		if assert.Nil(t, err) {
-			assert.Equal(t, tc.expected_num, len(tasks))
+			assert.Equal(t, tc.expected_length, len(tasks))
 		}
 	}
+}
+
+func TestGetListWithPagination(t *testing.T) {
+	var fl bool = false
+	var tr bool = true
+	var test_cases = []struct {
+		done            *bool
+		page            int
+		take            int
+		expected_length int
+	}{
+		{
+			done:            nil,
+			page:            1,
+			take:            2,
+			expected_length: 2,
+		},
+		{
+			done:            &fl,
+			page:            2,
+			take:            1,
+			expected_length: 0,
+		},
+		{
+			done:            &tr,
+			page:            1,
+			take:            3,
+			expected_length: 2,
+		},
+	}
+
+	for _, tc := range test_cases {
+		tasks, err := service.GetListWithPagination(tc.page, tc.take, tc.done)
+		if assert.Nil(t, err) {
+			assert.Equal(t, tc.expected_length, len(tasks))
+		}
+	}
+}
+
+func TestUpdateOwerwrites(t *testing.T) {
+	var tc = models.Task{
+		Id:       1,
+		Deadline: time.Now().Add(24 * time.Hour),
+	}
+	err := service.Update(tc.Id, tc)
+	task, _ := service.Get(tc.Id)
+	if assert.Nil(t, err) {
+		assert.Equal(t, "", task.Header)
+		assert.Equal(t, "", task.Description)
+		assert.False(t, task.Done)
+	}
+}
+
+func TestUpdateInvalidDeadline(t *testing.T) {
+	var tc = models.Task{
+		Id:       1,
+		Deadline: time.Now().Add(-24 * time.Hour),
+	}
+	err := service.Update(tc.Id, tc)
+	assert.ErrorIs(t, err, errInvalidDeadline)
 }
 
 func TestDelete(t *testing.T) {
@@ -203,7 +257,7 @@ func TestDelete(t *testing.T) {
 	for _, tc := range test_cases {
 		err := service.Delete(tc.id)
 		if assert.Nil(t, err) {
-			res, err := service.GetList(nil, nil, nil)
+			res, err := service.GetList(nil)
 			if assert.Nil(t, err) {
 				assert.Equal(t, tc.remaining, len(res))
 			}
@@ -212,9 +266,25 @@ func TestDelete(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	var task models.Task
-	id, err := service.Create(task)
-	if assert.Nil(t, err) {
-		assert.Equal(t, id, 4)
+	var test_cases = []struct {
+		task models.Task
+		id   int
+	}{
+		{
+			id: 4,
+		},
+		{
+			id: 5,
+		},
+		{
+			id: 6,
+		},
+	}
+
+	for _, tc := range test_cases {
+		id, err := service.Create(tc.task)
+		if assert.Nil(t, err) {
+			assert.Equal(t, id, tc.id)
+		}
 	}
 }
